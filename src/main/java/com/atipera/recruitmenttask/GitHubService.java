@@ -1,8 +1,6 @@
 package com.atipera.recruitmenttask;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-
 import java.util.List;
 
 @Service
@@ -15,18 +13,15 @@ class GitHubService {
     }
 
     List<RepositoryResponse> getUserRepositories(String username) {
-        try {
-            List<GitHubRepo> allRepos = gitHubClient.getRepos(username);
+        List<RepositoryResponse> repositories = gitHubClient.getRepositories(username);
 
-            return allRepos.stream()
-                    .filter(repo -> !repo.fork())
-                    .map(repo -> {
-                        List<BranchResponse> branches = gitHubClient.getBranches(repo.owner().login(), repo.name());
-                        return new RepositoryResponse(repo.name(), repo.owner().login(), branches);
-                    })
-                    .toList();
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new UserNotFoundException(e.getMessage());
-        }
+        return repositories.stream()
+                .filter(repo -> !repo.isFork()) // Zmiana z .fork() na .isFork()
+                .parallel()
+                .peek(repo -> {
+                    List<BranchResponse> branches = gitHubClient.getBranches(username, repo.getName()); // Zmiana z .name() na .getName()
+                    repo.setBranches(branches);
+                })
+                .toList();
     }
 }

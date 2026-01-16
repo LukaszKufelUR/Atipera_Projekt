@@ -1,6 +1,5 @@
 package com.atipera.recruitmenttask;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,10 +20,7 @@ class GitHubController {
 
     @GetMapping("/users/{username}/repos")
     ResponseEntity<List<RepositoryResponse>> getUserRepositories(@PathVariable String username) {
-        return ResponseEntity.ok(gitHubService.getUserRepositories(username));
+        List<RepositoryResponse> repositories = gitHubService.getUserRepositories(username);
+        return ResponseEntity.ok(repositories);
     }
 }
-
-record RepositoryResponse(String repositoryName, String ownerLogin, List<BranchResponse> branches) {}
-record BranchResponse(String name, @JsonProperty("commit") CommitInfo lastCommitSha) {}
-record CommitInfo(String sha) {}

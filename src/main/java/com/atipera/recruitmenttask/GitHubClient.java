@@ -8,31 +8,25 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 
 @Component
-class GitHubClient {
+public class GitHubClient {
 
     private final RestClient restClient;
 
-    GitHubClient(RestClient.Builder builder, @Value("${github.api.url:https://api.github.com}") String baseUrl) {
-        this.restClient = builder
-                .baseUrl(baseUrl)
-                .defaultHeader("Accept", "application/json")
-                .build();
+    public GitHubClient(RestClient.Builder builder, @Value("${github.api.url:https://api.github.com}") String apiUrl) {
+        this.restClient = builder.baseUrl(apiUrl).build();
     }
 
-    List<GitHubRepo> getRepos(String username) {
+    public List<RepositoryResponse> getRepositories(String username) {
         return restClient.get()
                 .uri("/users/{username}/repos", username)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
 
-    List<BranchResponse> getBranches(String owner, String repoName) {
+    public List<BranchResponse> getBranches(String username, String repoName) {
         return restClient.get()
-                .uri("/repos/{owner}/{repo}/branches", owner, repoName)
+                .uri("/repos/{username}/{repo}/branches", username, repoName)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
 }
-
-record GitHubRepo(String name, Owner owner, boolean fork) {}
-record Owner(String login) {}
